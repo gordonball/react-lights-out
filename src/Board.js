@@ -27,7 +27,7 @@ import "./Board.css";
  *
  **/
 
-function Board({ nrows=6, ncols=6, chanceLightStartsOn=.5 }) {
+function Board({ nrows = 2, ncols = 3, chanceLightStartsOn = .5 }) {
   const [board, setBoard] = useState(createBoard());
 
   /** create a board nrows high/ncols wide, each cell randomly lit or unlit */
@@ -35,9 +35,10 @@ function Board({ nrows=6, ncols=6, chanceLightStartsOn=.5 }) {
     let initialBoard = [];
     // TODO: create array-of-arrays of true/false values
     for (let i = 0; i < nrows; i++) {
-
-      initialBoard.push(new Array(ncols).fill(false));
-      initialBoard[i] = initialBoard[i].map(c => c = (chanceLightStartsOn * Math.random()) >= .5)
+      initialBoard.push(new Array(ncols).fill(true));
+      initialBoard[i] = initialBoard[i].map(c => {
+        return Math.random() > chanceLightStartsOn
+      });
     }
 
     return initialBoard;
@@ -45,12 +46,13 @@ function Board({ nrows=6, ncols=6, chanceLightStartsOn=.5 }) {
 
   function hasWon() {
     // TODO: check the board in state to determine whether the player has won.
-
-    return board.every(row => row.every(col => col === true));
+    console.log("Board>>>>>>>>>>", board);
+    return board.every(row => row.every(col => col === false));
   }
 
   function flipCellsAround(coord) {
     setBoard(oldBoard => {
+      console.log("coord ==========", coord);
       const [y, x] = coord.split("-").map(Number);
 
       const flipCell = (y, x, boardCopy) => {
@@ -65,10 +67,14 @@ function Board({ nrows=6, ncols=6, chanceLightStartsOn=.5 }) {
       const oldBoardCopy = oldBoard.slice(0, nrows);
 
       // TODO: in the copy, flip this cell and the cells around it
-      const updatedBoard = flipCell(y, x, oldBoardCopy);
+      flipCell(y, x, oldBoardCopy);
+      flipCell(y + 1, x, oldBoardCopy);
+      flipCell(y - 1, x, oldBoardCopy);
+      flipCell(y, x + 1, oldBoardCopy);
+      flipCell(y, x - 1, oldBoardCopy);
 
       // TODO: return the copy
-      return updatedBoard;
+      return oldBoardCopy;
     });
   }
 
@@ -83,7 +89,24 @@ function Board({ nrows=6, ncols=6, chanceLightStartsOn=.5 }) {
   // make table board
 
   // TODO:
-  createBoard();
+
+  return (
+    <table>
+      <tbody>
+        {board.map((row, y) =>
+          <tr key={y}>
+            {row.map((cell, x) =>
+              <Cell
+                key={x}
+                isLit={cell}
+                flipCellsAroundMe={() => flipCellsAround(`${y}-${x}`)}
+              />
+            )}
+          </tr>
+        )}
+      </tbody>
+    </table>
+  )
 }
 
 export default Board;
